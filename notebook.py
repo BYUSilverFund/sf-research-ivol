@@ -11,7 +11,6 @@ def _():
     import marimo as mo
     import polars as pl
     import sf_quant.data as sfd
-
     return alt, gt, mo, pl, sfd
 
 
@@ -40,13 +39,21 @@ def _(mo):
             "momentum",
             "vol_scaled_momentum",
             "barra_momentum",
-            "vol_scaled_barra_momentum",
+            # "vol_scaled_barra_momentum",
+            "ff3_momentum",
+            "vol_scaled_ff3_momentum",
+            "ff5_momentum",
+            # "vol_scaled_ff5_momentum"
         ],
         options=[
             "momentum",
             "vol_scaled_momentum",
             "barra_momentum",
             "vol_scaled_barra_momentum",
+            "ff3_momentum",
+            "vol_scaled_ff3_momentum",
+            "ff5_momentum",
+            "vol_scaled_ff5_momentum"
         ],
         label="Select signals",
     )
@@ -63,6 +70,10 @@ def _(end, pl, signal_names, start):
             "vol_scaled_momentum": 50,
             "barra_momentum": 50,
             "vol_scaled_barra_momentum": 43,
+            "ff3_momentum": 60,
+            "vol_scaled_ff3_momentum": 60,
+            "ff5_momentum": 60,
+            "vol_scaled_ff5_momentum": 60
         }[signal_name]
         for signal_name in signal_names.value
     ]

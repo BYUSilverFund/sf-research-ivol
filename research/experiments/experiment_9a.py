@@ -5,6 +5,7 @@ import polars as pl
 import sf_quant.data as sfd
 import sf_quant.performance as sfp
 from dotenv import load_dotenv
+import polars_ols as pls
 
 from research.utils import run_backtest_parallel
 
