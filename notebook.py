@@ -39,22 +39,26 @@ def _(mo):
         value=[
             "momentum",
             "vol_scaled_momentum",
-            "barra_momentum",
-            # "vol_scaled_barra_momentum",
+            "capm_momentum",
+            # "vol_scaled_capm_momentum",
             "ff3_momentum",
             "vol_scaled_ff3_momentum",
             "ff5_momentum",
-            # "vol_scaled_ff5_momentum"
+            # "vol_scaled_ff5_momentum",
+            "barra_momentum",
+            # "vol_scaled_barra_momentum",
         ],
         options=[
             "momentum",
             "vol_scaled_momentum",
-            "barra_momentum",
-            "vol_scaled_barra_momentum",
+            "capm_momentum",
+            "vol_scaled_capm_momentum",
             "ff3_momentum",
             "vol_scaled_ff3_momentum",
             "ff5_momentum",
             "vol_scaled_ff5_momentum",
+            "barra_momentum",
+            "vol_scaled_barra_momentum",
         ],
         label="Select signals",
     )
@@ -75,6 +79,7 @@ def _(end, pl, signal_names, start):
             "vol_scaled_ff3_momentum": 60,
             "ff5_momentum": 60,
             "vol_scaled_ff5_momentum": 60,
+            "capm_momentum": 60,
         }[signal_name]
         for signal_name in signal_names.value
     ]
@@ -190,6 +195,11 @@ def _(gt, pl, portfolio_returns):
     )
 
     table
+    return
+
+
+@app.cell
+def _():
     return
 
 
