@@ -9,8 +9,8 @@ import statsmodels.formula.api as smf
 
 # Parameters
 start = dt.date(1996, 1, 1)
-end = dt.date(2024, 12, 31)
-signal_name = "momentum"
+end = dt.date(2025, 12, 31)
+signal_name = "ivol"
 gamma = 50
 results_folder = Path("results/experiment_1")
 

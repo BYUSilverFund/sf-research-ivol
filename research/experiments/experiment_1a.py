@@ -15,9 +15,9 @@ load_dotenv()
 
 # Parameters
 start = dt.date(1996, 1, 1)
-end = dt.date(2024, 12, 31)
+end = dt.date(2025, 12, 31)
 price_filter = 5
-signal_name = "momentum"
+signal_name = "ivol"
 IC = 0.05
 gamma = 50
 n_cpus = 8
@@ -50,12 +50,7 @@ data = sfd.load_assets(
 
 # compute signal
 signals = data.sort("barrid", "date").with_columns(
-    pl.col("return")
-    .log1p()
-    .rolling_sum(230)
-    .shift(21)
-    .over("barrid")
-    .alias(signal_name)
+    pl.col("specific_risk").shift(1).over("barrid").alias(signal_name)
 )
 
 # Filter universe
