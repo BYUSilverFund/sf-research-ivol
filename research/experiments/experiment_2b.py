@@ -10,9 +10,9 @@ import statsmodels.formula.api as smf
 # Parameters
 start = dt.date(1996, 1, 1)
 end = dt.date(2024, 12, 31)
-signal_name = "ivol"
+signal_name = "bab"
 gamma = 50
-results_folder = Path("results/experiment_1")
+results_folder = Path("results/experiment_2")
 
 # Create results folder
 results_folder.mkdir(parents=True, exist_ok=True)

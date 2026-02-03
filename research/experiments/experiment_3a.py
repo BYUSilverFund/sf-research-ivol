@@ -1,4 +1,4 @@
-# IVOL
+# Combined signals without IVOL
 
 import datetime as dt
 from pathlib import Path
@@ -8,6 +8,8 @@ import sf_quant.data as sfd
 import sf_quant.performance as sfp
 from dotenv import load_dotenv
 
+from research.utils import run_backtest_parallel
+
 # Load environment variables
 load_dotenv()
 
@@ -15,12 +17,12 @@ load_dotenv()
 start = dt.date(1996, 1, 1)
 end = dt.date(2024, 12, 31)
 price_filter = 5
-signal_name = "ivol"
+signal_name = "no_ivol_total"
 IC = 0.05
 gamma = 50
 n_cpus = 8
 constraints = ["ZeroBeta", "ZeroInvestment"]
-results_folder = Path("results/experiment_1")
+results_folder = Path("results/experiment_3")
 
 # Create results folder
 results_folder.mkdir(parents=True, exist_ok=True)
@@ -48,16 +50,32 @@ data = sfd.load_assets(
 
 # compute signal
 signals = data.sort("barrid", "date").with_columns(
-    pl.col("specific_risk").mul(-1).shift(1).over("barrid").alias(signal_name)
+    pl.col("predicted_beta").mul(-1).shift(1).over("barrid").alias("bab"),
+    pl.col("specific_return")
+    .ewm_mean(span=5, min_samples=5)
+    .mul(-1)
+    .shift(1)
+    .over("barrid")
+    .alias("reversal"),
+    pl.col("return")
+    .log1p()
+    .rolling_sum(230)
+    .shift(21)
+    .over("barrid")
+    .alias("momentum"),
 )
 
 # Filter universe
 filtered = signals.filter(
     pl.col("price").shift(1).over("barrid").gt(price_filter),
-    pl.col(signal_name).is_not_null(),
+    pl.col("momentum").is_not_null(),
+    pl.col("reversal").is_not_null(),
+    pl.col("bab").is_not_null(),
     pl.col("predicted_beta").is_not_null(),
     pl.col("specific_risk").is_not_null(),
 )
+
+signals = ["reversal", "momentum", "bab"]
 
 # Compute scores
 scores = filtered.select(
@@ -65,19 +83,46 @@ scores = filtered.select(
     "barrid",
     "predicted_beta",
     "specific_risk",
-    pl.col(signal_name)
-    .sub(pl.col(signal_name).mean())
-    .truediv(pl.col(signal_name).std())
+    pl.col("reversal")
+    .sub(pl.col("reversal").mean())
+    .truediv(pl.col("reversal").std())
     .over("date")
-    .alias("score"),
+    .alias("reversal_score"),
+    pl.col("momentum")
+    .sub(pl.col("momentum").mean())
+    .truediv(pl.col("momentum").std())
+    .over("date")
+    .alias("momentum_score"),
+    pl.col("bab")
+    .sub(pl.col("bab").mean())
+    .truediv(pl.col("bab").std())
+    .over("date")
+    .alias("bab_score"),
 )
 
 # Compute alphas
 alphas = (
-    scores.with_columns(pl.col("score").mul(IC).mul("specific_risk").alias("alpha"))
-    .select("date", "barrid", "alpha", "predicted_beta")
+    scores.with_columns(
+        pl.col("reversal_score").mul(IC).mul("specific_risk").alias("reversal_alpha"),
+        pl.col("momentum_score").mul(IC).mul("specific_risk").alias("momentum_alpha"),
+        pl.col("bab_score").mul(IC).mul("specific_risk").alias("bab_alpha"),
+    )
+    .select(
+        "date",
+        "barrid",
+        "reversal_alpha",
+        "momentum_alpha",
+        "bab_alpha",
+        "predicted_beta",
+    )
     .sort("date", "barrid")
 )
+
+# compute combined alphas
+alphas = alphas.with_columns(
+    pl.mean_horizontal([pl.col(f"{s}_alpha") for s in signals]).alias("alpha")
+).sort(["barrid", "date"])
+
 
 # Get forward returns
 forward_returns = (
@@ -117,10 +162,10 @@ sfp.generate_ic_chart(
 )
 
 # Run parallelized backtest
-# run_backtest_parallel(
-#     data=alphas,
-#     signal_name=signal_name,
-#     constraints=constraints,
-#     gamma=gamma,
-#     n_cpus=n_cpus,
-# )
+run_backtest_parallel(
+    data=alphas,
+    signal_name=signal_name,
+    constraints=constraints,
+    gamma=gamma,
+    n_cpus=n_cpus,
+)

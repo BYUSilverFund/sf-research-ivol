@@ -1,4 +1,4 @@
-# IVOL
+# BaB
 
 import datetime as dt
 from pathlib import Path
@@ -8,6 +8,8 @@ import sf_quant.data as sfd
 import sf_quant.performance as sfp
 from dotenv import load_dotenv
 
+from research.utils import run_backtest_parallel
+
 # Load environment variables
 load_dotenv()
 
@@ -15,12 +17,12 @@ load_dotenv()
 start = dt.date(1996, 1, 1)
 end = dt.date(2024, 12, 31)
 price_filter = 5
-signal_name = "ivol"
+signal_name = "bab"
 IC = 0.05
 gamma = 50
 n_cpus = 8
 constraints = ["ZeroBeta", "ZeroInvestment"]
-results_folder = Path("results/experiment_1")
+results_folder = Path("results/experiment_2")
 
 # Create results folder
 results_folder.mkdir(parents=True, exist_ok=True)
@@ -48,7 +50,7 @@ data = sfd.load_assets(
 
 # compute signal
 signals = data.sort("barrid", "date").with_columns(
-    pl.col("specific_risk").mul(-1).shift(1).over("barrid").alias(signal_name)
+    pl.col("predicted_beta").mul(-1).shift(1).over("barrid").alias(signal_name)
 )
 
 # Filter universe
@@ -117,10 +119,10 @@ sfp.generate_ic_chart(
 )
 
 # Run parallelized backtest
-# run_backtest_parallel(
-#     data=alphas,
-#     signal_name=signal_name,
-#     constraints=constraints,
-#     gamma=gamma,
-#     n_cpus=n_cpus,
-# )
+run_backtest_parallel(
+    data=alphas,
+    signal_name=signal_name,
+    constraints=constraints,
+    gamma=gamma,
+    n_cpus=n_cpus,
+)

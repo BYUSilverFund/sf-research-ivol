@@ -37,23 +37,20 @@ def _(mo):
 
     signal_names = mo.ui.multiselect(
         value=[
-            "vol_scaled_momentum",
-            "vol_scaled_capm_momentum",
-            "vol_scaled_ff3_momentum",
-            "vol_scaled_ff5_momentum",
-            "vol_scaled_barra_momentum",
+            "ivol",
+            "bab",
+            "no_ivol_total",
+            "ivol_total",
+            "ivol_bab",
+            "no_bab_ivol_total",
         ],
         options=[
-            "momentum",
-            "vol_scaled_momentum",
-            "capm_momentum",
-            "vol_scaled_capm_momentum",
-            "ff3_momentum",
-            "vol_scaled_ff3_momentum",
-            "ff5_momentum",
-            "vol_scaled_ff5_momentum",
-            "barra_momentum",
-            "vol_scaled_barra_momentum",
+            "ivol",
+            "bab",
+            "no_ivol_total",
+            "ivol_total",
+            "ivol_bab",
+            "no_bab_ivol_total",
         ],
         label="Select signals",
     )
@@ -66,16 +63,12 @@ def _(mo):
 def _(end, pl, signal_names, start):
     gammas = [
         {
-            "momentum": 50,
-            "vol_scaled_momentum": 50,
-            "barra_momentum": 50,
-            "vol_scaled_barra_momentum": 43,
-            "ff3_momentum": 60,
-            "vol_scaled_ff3_momentum": 60,
-            "ff5_momentum": 60,
-            "vol_scaled_ff5_momentum": 60,
-            "capm_momentum": 60,
-            "vol_scaled_capm_momentum": 60,
+            "ivol": 50,
+            "bab": 50,
+            "no_ivol_total": 50,
+            "ivol_total": 50,
+            "ivol_bab": 50,
+            "no_bab_ivol_total": 50,
         }[signal_name]
         for signal_name in signal_names.value
     ]
